@@ -9,6 +9,7 @@ const pdfParse = require('pdf-parse');
 const multer = require('multer');
 
 const app = express();
+app.use(express.static('public'));
 app.use(express.json());
 
 // Diretórios
@@ -172,3 +173,4 @@ function minutosParaHora(m) {
 app.listen(3000, () => {
     console.log('Servidor rodando na porta 3000');
 });
+
