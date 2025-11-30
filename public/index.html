@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Banco de Horas - Interface</title>
+  <style>
+    :root{--bg:#0f1724;--card:#0b1220;--accent:#06b6d4;--muted:#94a3b8;color-scheme:dark}
+    *{box-sizing:border-box;font-family:Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial}
+    body{margin:0;background:linear-gradient(180deg,#071029 0%, #07121a 100%);color:#e6eef6;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
+    .wrap{width:100%;max-width:980px}
+    header{display:flex;align-items:center;gap:12px;margin-bottom:18px}
+    h1{margin:0;font-size:20px}
+    .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
+    .card{background:rgba(255,255,255,0.02);padding:18px;border-radius:12px;box-shadow:0 6px 18px rgba(2,6,23,0.6)}
+    label{display:block;font-size:13px;color:var(--muted);margin-bottom:6px}
+    input[type=text], input[type=password], input[type=file], input[type=date], input[type=time]{width:100%;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:inherit}
+    button{background:var(--accent);border:none;padding:10px 12px;border-radius:10px;color:#021223;cursor:pointer;font-weight:600}
+    small{display:block;color:var(--muted);margin-top:8px}
+    .full{grid-column:1 / -1}
+    pre{background:#041022;padding:12px;border-radius:8px;overflow:auto;max-height:300px}
+    .row{display:flex;gap:8px}
+    footer{margin-top:12px;color:var(--muted);font-size:13px;text-align:center}
+    @media (max-width:880px){.grid{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <h1>Banco de Horas — Interface</h1>
+      <small>Conecte ao servidor Express (mesma origem)</small>
+    </header>
+
+    <div class="grid">
+      <div class="card">
+        <h3>Registrar usuário</h3>
+        <label>Nome</label>
+        <input id="reg-nome" type="text" placeholder="Nome completo" />
+        <label>Login</label>
+        <input id="reg-login" type="text" placeholder="login" />
+        <label>Senha</label>
+        <input id="reg-senha" type="password" placeholder="senha" />
+        <label>ID do colaborador (opcional)</label>
+        <input id="reg-idcol" type="text" placeholder="2087111720" />
+        <div style="margin-top:10px" class="row">
+          <button id="btn-register">Registrar</button>
+          <button id="btn-clear-reg" style="background:transparent;color:var(--accent);border:1px solid rgba(255,255,255,0.04)">Limpar</button>
+        </div>
+        <small id="reg-msg"></small>
+      </div>
+
+      <div class="card">
+        <h3>Login</h3>
+        <label>Login</label>
+        <input id="login-login" type="text" />
+        <label>Senha</label>
+        <input id="login-senha" type="password" />
+        <div style="margin-top:10px" class="row">
+          <button id="btn-login">Entrar</button>
+          <button id="btn-logout" style="background:transparent;color:var(--accent);border:1px solid rgba(255,255,255,0.04)">Sair</button>
+        </div>
+        <small id="login-msg"></small>
+      </div>
+
+      <div class="card full">
+        <h3>Enviar Comprovante (PDF)</h3>
+        <label>Selecione o PDF</label>
+        <input id="pdf-file" type="file" accept="application/pdf" />
+        <label>Associar ID do colaborador (opcional)</label>
+        <input id="upload-id" type="text" placeholder="Se vazio, o ID será extraído do PDF" />
+        <div style="margin-top:10px" class="row">
+          <button id="btn-upload">Enviar PDF</button>
+          <button id="btn-fetch" style="background:transparent;color:var(--accent);border:1px solid rgba(255,255,255,0.04)">Ver último registro</button>
+        </div>
+        <small id="upload-msg"></small>
+      </div>
+
+      <div class="card full">
+        <h3>Último registro retornado</h3>
+        <pre id="resp">Nenhum registro</pre>
+        <div style="margin-top:8px" class="row">
+          <button id="btn-download" style="background:transparent;color:var(--accent);border:1px solid rgba(255,255,255,0.04)">Download JSON</button>
+          <button id="btn-open-folder" style="background:transparent;color:var(--accent);border:1px solid rgba(255,255,255,0.04)">Abrir pasta (server)</button>
+        </div>
+      </div>
+
+    </div>
+
+    <footer>Feito para conectar com as rotas /register, /login e /upload-ponto do servidor Express.</footer>
+  </div>
+
+  <script>
+    // util
+    const $ = id => document.getElementById(id);
+    function mostra(id, txt){$(id).textContent = txt}
+
+    // REGISTER
+    $('btn-register').addEventListener('click', async () => {
+      mostra('reg-msg','Enviando...');
+      const body = { login: $('reg-login').value.trim(), senha: $('reg-senha').value, nome: $('reg-nome').value.trim(), idColab: $('reg-idcol').value.trim() };
+      try{
+        const r = await fetch('/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+        const j = await r.json();
+        if(r.ok) {
+          mostra('reg-msg', j.msg || 'Registrado');
+          $('reg-login').value = '';
+          $('reg-senha').value = '';
+          $('reg-nome').value = '';
+        } else mostra('reg-msg', j.erro || JSON.stringify(j));
+      }catch(e){mostra('reg-msg','Erro: '+e.message)}
+    });
+    $('btn-clear-reg').addEventListener('click', ()=>{['reg-login','reg-senha','reg-nome','reg-idcol'].forEach(i=>$(i).value='');mostra('reg-msg','')});
+
+    // LOGIN
+    $('btn-login').addEventListener('click', async ()=>{
+      mostra('login-msg','Entrando...');
+      const body = { login: $('login-login').value.trim(), senha: $('login-senha').value };
+      try{
+        const r = await fetch('/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+        const j = await r.json();
+        if(r.ok){
+          localStorage.setItem('bh_user', body.login);
+          mostra('login-msg', j.msg || 'OK');
+        } else mostra('login-msg', j.erro || JSON.stringify(j));
+      }catch(e){mostra('login-msg','Erro: '+e.message)}
+    });
+
+    $('btn-logout').addEventListener('click', ()=>{localStorage.removeItem('bh_user');mostra('login-msg','Desconectado')});
+
+    // UPLOAD
+    let lastRegistro = null;
+    $('btn-upload').addEventListener('click', async ()=>{
+      const f = $('pdf-file').files[0];
+      if(!f) return mostra('upload-msg','Selecione um arquivo PDF');
+      mostra('upload-msg','Enviando...');
+      const fd = new FormData();
+      fd.append('pdf', f);
+      const idAssoc = $('upload-id').value.trim();
+      if(idAssoc) fd.append('idColab', idAssoc);
+
+      try{
+        const r = await fetch('/upload-ponto', {method:'POST', body: fd});
+        const j = await r.json();
+        if(r.ok){ lastRegistro = j.dados || j; $('resp').textContent = JSON.stringify(lastRegistro, null, 2); mostra('upload-msg','Processado com sucesso'); }
+        else { mostra('upload-msg', j.erro || JSON.stringify(j)); }
+      }catch(e){mostra('upload-msg','Erro: '+e.message)}
+    });
+
+    // fetch last registro (local only)
+    $('btn-fetch').addEventListener('click', ()=>{
+      if(lastRegistro) $('resp').textContent = JSON.stringify(lastRegistro, null, 2);
+      else $('resp').textContent = 'Nenhum registro local. Envie um PDF primeiro.';
+    });
+
+    // download
+    $('btn-download').addEventListener('click', ()=>{
+      if(!lastRegistro) return alert('Nenhum registro para baixar');
+      const blob = new Blob([JSON.stringify(lastRegistro, null, 2)], {type:'application/json'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a'); a.href = url; a.download = `registro_${(lastRegistro.id||'unknown')}.json`; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+    });
+
+    // open folder - best-effort: try to open endpoint that lists files (server must implement)
+    $('btn-open-folder').addEventListener('click', ()=>{
+      window.open('/dadosHoras','_blank');
+    });
+
+    // inicializa estado
+    if(localStorage.getItem('bh_user')) mostra('login-msg','Conectado: '+localStorage.getItem('bh_user'));
+  </script>
+</body>
+</html>
