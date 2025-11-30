@@ -1,0 +1,30 @@
+{
+  "name": "banco-horas-servidor",
+  "version": "1.0.0",
+  "description": "Servidor Express com sistema de login, registro, leitura de PDF e calculo de banco de horas.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js"
+  },
+  "keywords": [
+    "express",
+    "pdf",
+    "banco de horas",
+    "controle de ponto"
+  ],
+  "author": "rec",
+  "license": "MIT",
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "express": "^4.19.2",
+    "multer": "^1.4.5",
+    "pdf-parse": "^1.1.1",
+    "uuid": "^9.0.1",
+    "cors": "^2.8.5",
+    "fs-extra": "^11.2.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.0"
+  }
+}
